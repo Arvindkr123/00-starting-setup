@@ -10,13 +10,22 @@ exports.getAddProduct = (req, res, next) => {
 
 exports.postAddProduct = (req, res, next) => {
   const { title, imageUrl, price, description } = req.body;
+  // console.log("from add product",req.user)
 
-  Product.create({
-    title,
-    price,
-    imageUrl,
-    description,
-  })
+  req.user
+    .createProduct({
+      title,
+      price,
+      imageUrl,
+      description,
+    })
+    // Product.create({
+    //   title,
+    //   price,
+    //   imageUrl,
+    //   description,
+    //   UserId: req.user.id,
+    // })
     .then((product) => {
       console.log("Product added:", product);
       res.redirect("/admin/products");
@@ -33,8 +42,15 @@ exports.getEditProduct = (req, res, next) => {
   }
   const prodId = req.params.productId;
 
-  Product.findOne({ where: { id: prodId } })
-    .then((product) => {
+  // Product.findOne({ where: { id: prodId } })
+  req.user
+    .getProducts({
+      where: {
+        id: prodId,
+      },
+    })
+    .then((products) => {
+      let product = products[0];
       if (!product) {
         return res.redirect("/");
       }
@@ -77,14 +93,23 @@ exports.postEditProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.findAll().then((products) => {
-    console.log(products);
+  req.user.getProducts().then((products) => {
+    // console.log(products);
     res.render("admin/products", {
       prods: products,
       pageTitle: "Admin Products",
       path: "/admin/products",
     });
   });
+
+  // Product.findAll().then((products) => {
+  //   // console.log(products);
+  //   res.render("admin/products", {
+  //     prods: products,
+  //     pageTitle: "Admin Products",
+  //     path: "/admin/products",
+  //   });
+  // });
 };
 
 exports.postDeleteProduct = (req, res, next) => {
